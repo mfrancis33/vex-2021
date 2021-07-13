@@ -39,10 +39,11 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
   while (1) {
-    // Set motor velocities
+    // Set motor velocities.
+    // Get percentage from controller axes.
     int leftAxisPercent  = Controller1.Axis3.position(percent);
     int rightAxisPercent = Controller1.Axis2.position(percent);
-    // Detect if we need to move the motors
+    // Detect if we need to move the motors.
     // The value of 20 is an arbitrary low value to prevent motor waste from
     // controller drifting. Absolute value is used to ensure that this works
     // in both directions.
@@ -54,7 +55,7 @@ void usercontrol(void) {
       FrontRightMotor.setVelocity(rightAxisPercent, percent);
       BackRightMotor .setVelocity(rightAxisPercent, percent);
     } else {
-      // If no input is detected, set velocities to 0
+      // If no input is detected, set velocities to 0.
       FrontLeftMotor .setVelocity(0, percent);
       BackLeftMotor  .setVelocity(0, percent);
       FrontRightMotor.setVelocity(0, percent);
