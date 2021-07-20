@@ -15,6 +15,8 @@
 // FrontRightMotor      motor         2               
 // BackLeftMotor        motor         3               
 // BackRightMotor       motor         4               
+// LeftElevator         motor         5               
+// RightElevator        motor         6               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -27,6 +29,30 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 
+///////////////////////////////////////////////////////////////////////////
+// CUSTOM METHODS
+
+void setChassisMotors(int leftPer, int rightPer){
+  //Set motor velocities
+  FrontLeftMotor .setVelocity(leftPer,  percent);
+  BackLeftMotor  .setVelocity(leftPer,  percent);
+  FrontRightMotor.setVelocity(rightPer, percent);
+  BackRightMotor .setVelocity(rightPer, percent);
+}
+
+void setChassisMotors(int percent){
+  //Set motor velocities
+  setChassisMotors(percent, percent);
+}
+
+void stopChassisMotors(){
+  //Stop motors
+  setChassisMotors(0);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// IMPORTANT FUNCTIONS
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -38,37 +64,58 @@ void autonomous(void) {
 
 void usercontrol(void) {
   // User control code here, inside the loop
-  while (1) {
-    // Set motor velocities.
-    // Get percentage from controller axes.
+
+  int elevatorSpeed = 50;
+
+  while(1){
+    ///////////////////////////////////////////////////////////////////////////
+    // CHASSIS MOTORS
+
+    // Get percentage from controller axes
     int leftAxisPercent  = Controller1.Axis3.position(percent);
     int rightAxisPercent = Controller1.Axis2.position(percent);
-    // Detect if we need to move the motors.
-    // The value of 20 is an arbitrary low value to prevent motor waste from
-    // controller drifting. Absolute value is used to ensure that this works
-    // in both directions.
+
+    /**
+     * Detect if we need to move the motors
+     * 
+     * The value of 20 is an arbitrary low value to prevent motor waste from
+     * controller drifting. Absolute value is used to ensure that this works
+     * in both directions.
+     */
     if(abs(leftAxisPercent) > 20 || abs(rightAxisPercent) > 20){
       // Set velocity to the amount the corresponding axis of the controller
-      // is set to.
-      FrontLeftMotor .setVelocity(leftAxisPercent,  percent);
-      BackLeftMotor  .setVelocity(leftAxisPercent,  percent);
-      FrontRightMotor.setVelocity(rightAxisPercent, percent);
-      BackRightMotor .setVelocity(rightAxisPercent, percent);
+      // is set to
+      setChassisMotors(leftAxisPercent, rightAxisPercent);
     } else {
-      // If no input is detected, set velocities to 0.
-      FrontLeftMotor .setVelocity(0, percent);
-      BackLeftMotor  .setVelocity(0, percent);
-      FrontRightMotor.setVelocity(0, percent);
-      BackRightMotor .setVelocity(0, percent);
+      // If no input is detected, stop motors
+      stopChassisMotors();
     }
 
-    // DO NOT REMOVE THIS!
+    ///////////////////////////////////////////////////////////////////////////
+    // MOBILE GOAL ELEVATOR (4-BAR)
+
+    // Move 4-bar motors depending on button presses
+    if(Controller1.ButtonR1.pressing()){
+      //Move motors up if R1 is pressed
+      LeftElevator .setVelocity(elevatorSpeed, percent);
+      RightElevator.setVelocity(elevatorSpeed, percent);
+    } else if(Controller1.ButtonR2.pressing()){
+      //Move motors down if R2 is pressed
+      LeftElevator .setVelocity(-elevatorSpeed, percent);
+      RightElevator.setVelocity(-elevatorSpeed, percent);
+    } else {
+      //Stop motors
+      LeftElevator .setVelocity(0, percent);
+      RightElevator.setVelocity(0, percent);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     wait(20, msec);
   }
 }
 
 // DO NOT CHANGE THIS FUNCTION!
-int main() {
+int main(){
   // Set up callbacks for autonomous and driver control periods.
   Competition.autonomous(autonomous);
   Competition.drivercontrol(usercontrol);
@@ -77,8 +124,7 @@ int main() {
   pre_auton();
 
   // Prevent main from exiting with an infinite loop.
-  while (true) {
+  while(1){
     wait(100, msec);
   }
 }
-
