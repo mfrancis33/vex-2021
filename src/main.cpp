@@ -65,6 +65,7 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
 
+  int threshold = 20;
   int elevatorSpeed = 50;
 
   while(1){
@@ -75,16 +76,9 @@ void usercontrol(void) {
     int leftAxisPercent  = Controller1.Axis3.position(percent);
     int rightAxisPercent = Controller1.Axis2.position(percent);
 
-    /**
-     * Detect if we need to move the motors
-     * 
-     * The value of 20 is an arbitrary low value to prevent motor waste from
-     * controller drifting. Absolute value is used to ensure that this works
-     * in both directions.
-     */
-    if(abs(leftAxisPercent) > 20 || abs(rightAxisPercent) > 20){
-      // Set velocity to the amount the corresponding axis of the controller
-      // is set to
+    // Detect if we need to move the motors
+    if(abs(leftAxisPercent) > threshold || abs(rightAxisPercent) > threshold){
+      // Set velocity to the corresponding axis of the controller
       setChassisMotors(leftAxisPercent, rightAxisPercent);
     } else {
       // If no input is detected, stop motors
