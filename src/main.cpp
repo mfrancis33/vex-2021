@@ -32,7 +32,7 @@ competition Competition;
 ///////////////////////////////////////////////////////////////////////////
 // CUSTOM METHODS
 
-void setChassisMotors(int leftPer, int rightPer){
+void setChassisMotors(double leftPer, double rightPer){
   //Set motor velocities
   FrontLeftMotor .setVelocity(leftPer,  percent);
   BackLeftMotor  .setVelocity(leftPer,  percent);
@@ -40,14 +40,14 @@ void setChassisMotors(int leftPer, int rightPer){
   BackRightMotor .setVelocity(rightPer, percent);
 }
 
-void setChassisMotors(int percent){
+void setChassisMotors(double percent){
   //Set motor velocities
   setChassisMotors(percent, percent);
 }
 
 void stopChassisMotors(){
   //Stop motors
-  setChassisMotors(0);
+  setChassisMotors(0.);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -65,19 +65,21 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
 
-  int threshold = 20;
-  int elevatorSpeed = 50;
+  double threshold = 20.;
+  double elevatorSpeed = 50.;
 
-  while(1){
+  // Controller1.Screen.print("Hello world!");
+
+  while(true){
     ///////////////////////////////////////////////////////////////////////////
     // CHASSIS MOTORS
 
     // Get percentage from controller axes
-    int leftAxisPercent  = Controller1.Axis3.position(percent);
-    int rightAxisPercent = Controller1.Axis2.position(percent);
+    double leftAxisPercent  = (double)(Controller1.Axis3.position(percent));
+    double rightAxisPercent = (double)(Controller1.Axis2.position(percent));
 
     // Detect if we need to move the motors
-    if(abs(leftAxisPercent) > threshold || abs(rightAxisPercent) > threshold){
+    if(std::abs(leftAxisPercent) > threshold || std::abs(rightAxisPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
       setChassisMotors(leftAxisPercent, rightAxisPercent);
     } else {
@@ -99,12 +101,12 @@ void usercontrol(void) {
       RightElevator.setVelocity(-elevatorSpeed, percent);
     } else {
       //Stop motors
-      LeftElevator .setVelocity(0, percent);
-      RightElevator.setVelocity(0, percent);
+      LeftElevator .setVelocity(0., percent);
+      RightElevator.setVelocity(0., percent);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    wait(20, msec);
+    wait(20., msec);
   }
 }
 
@@ -118,7 +120,7 @@ int main(){
   pre_auton();
 
   // Prevent main from exiting with an infinite loop.
-  while(1){
+  while(true){
     wait(100, msec);
   }
 }
