@@ -11,10 +11,10 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// FrontLeftMotor       motor         1               
-// FrontRightMotor      motor         2               
-// BackLeftMotor        motor         3               
-// BackRightMotor       motor         4               
+// LeftMotor            motor         1               
+// RightMotor           motor         2               
+// FrontMotor           motor         3               
+// BackMotor            motor         4               
 // LeftElevator         motor         5               
 // RightElevator        motor         6               
 // ---- END VEXCODE CONFIGURED DEVICES ----
@@ -28,27 +28,6 @@ using namespace vex;
 competition Competition;
 
 // define your global instances of motors and other devices here
-
-///////////////////////////////////////////////////////////////////////////
-// CUSTOM METHODS
-
-void setChassisMotors(double leftPer, double rightPer){
-  //Set motor velocities
-  FrontLeftMotor .setVelocity(leftPer,  percent);
-  BackLeftMotor  .setVelocity(leftPer,  percent);
-  FrontRightMotor.setVelocity(rightPer, percent);
-  BackRightMotor .setVelocity(rightPer, percent);
-}
-
-void setChassisMotors(double percent){
-  //Set motor velocities
-  setChassisMotors(percent, percent);
-}
-
-void stopChassisMotors(){
-  //Stop motors
-  setChassisMotors(0.);
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // IMPORTANT FUNCTIONS
@@ -75,16 +54,37 @@ void usercontrol(void) {
     // CHASSIS MOTORS
 
     // Get percentage from controller axes
-    double leftAxisPercent  = (double)(Controller1.Axis3.position(percent));
-    double rightAxisPercent = (double)(Controller1.Axis2.position(percent));
+    double leftAxisVertPercent   = (double)(Controller1.Axis3.position(percent));
+    double rightAxisVertPercent  = (double)(Controller1.Axis2.position(percent));
 
-    // Detect if we need to move the motors
-    if(std::abs(leftAxisPercent) > threshold || std::abs(rightAxisPercent) > threshold){
+    double leftAxisHorizPercent  = (double)(Controller1.Axis4.position(percent));
+    double rightAxisHorizPercent = (double)(Controller1.Axis1.position(percent));
+
+    // Detect if we need to move the motors that move forwards/backwards
+    if(std::abs(leftAxisVertPercent) > threshold || std::abs(rightAxisVertPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
-      setChassisMotors(leftAxisPercent, rightAxisPercent);
+      LeftMotor .setVelocity(leftAxisVertPercent, percent);
+      RightMotor.setVelocity(rightAxisVertPercent, percent);
     } else {
       // If no input is detected, stop motors
-      stopChassisMotors();
+      LeftMotor .setVelocity(0, percent);
+      RightMotor.setVelocity(0, percent);
+    }
+
+    // Detect if we need to move the motors that move side to side or if we
+    // need to go turny-turn in place
+    if(std::abs(leftAxisHorizPercent) > threshold){
+      // Set velocity to the corresponding axis of the controller
+      FrontMotor.setVelocity(leftAxisHorizPercent, percent);
+      BackMotor .setVelocity(leftAxisHorizPercent, percent);
+    } else if(std::abs(rightAxisHorizPercent) > threshold){
+      // Set velocity to the corresponding axis of the controller
+      FrontMotor.setVelocity( rightAxisHorizPercent, percent);
+      BackMotor .setVelocity(-rightAxisHorizPercent, percent);
+    } else {
+      // If no input is detected, stop motors
+      FrontMotor.setVelocity(0, percent);
+      BackMotor .setVelocity(0, percent);
     }
 
     ///////////////////////////////////////////////////////////////////////////
