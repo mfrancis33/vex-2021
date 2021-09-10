@@ -63,28 +63,29 @@ void usercontrol(void) {
     // Detect if we need to move the motors that move forwards/backwards
     if(std::abs(leftAxisVertPercent) > threshold || std::abs(rightAxisVertPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
-      LeftMotor .setVelocity(leftAxisVertPercent, percent);
-      RightMotor.setVelocity(rightAxisVertPercent, percent);
+      //LeftMotor.spin(forward, leftAxisHorizPercent, percent);
+      LeftMotor .spin(forward, leftAxisVertPercent, percent);
+      RightMotor.spin(forward, rightAxisVertPercent, percent);
     } else {
       // If no input is detected, stop motors
-      LeftMotor .setVelocity(0, percent);
-      RightMotor.setVelocity(0, percent);
+      LeftMotor .stop();
+      RightMotor.stop();
     }
 
     // Detect if we need to move the motors that move side to side or if we
     // need to go turny-turn in place
     if(std::abs(leftAxisHorizPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
-      FrontMotor.setVelocity(leftAxisHorizPercent, percent);
-      BackMotor .setVelocity(leftAxisHorizPercent, percent);
+      FrontMotor.spin(forward, leftAxisHorizPercent, percent);
+      BackMotor .spin(forward, leftAxisHorizPercent, percent);
     } else if(std::abs(rightAxisHorizPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
-      FrontMotor.setVelocity( rightAxisHorizPercent, percent);
-      BackMotor .setVelocity(-rightAxisHorizPercent, percent);
+      FrontMotor.spin(forward,  rightAxisHorizPercent, percent);
+      BackMotor .spin(forward, -rightAxisHorizPercent, percent);
     } else {
       // If no input is detected, stop motors
-      FrontMotor.setVelocity(0, percent);
-      BackMotor .setVelocity(0, percent);
+      FrontMotor.stop();
+      BackMotor .stop();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,16 +94,16 @@ void usercontrol(void) {
     // Move 4-bar motors depending on button presses
     if(Controller1.ButtonR1.pressing()){
       //Move motors up if R1 is pressed
-      LeftElevator .setVelocity(elevatorSpeed, percent);
-      RightElevator.setVelocity(elevatorSpeed, percent);
+      LeftElevator .spin(forward, elevatorSpeed, percent);
+      RightElevator.spin(forward, elevatorSpeed, percent);
     } else if(Controller1.ButtonR2.pressing()){
       //Move motors down if R2 is pressed
-      LeftElevator .setVelocity(-elevatorSpeed, percent);
-      RightElevator.setVelocity(-elevatorSpeed, percent);
+      LeftElevator .spin(reverse, elevatorSpeed, percent);
+      RightElevator.spin(reverse, elevatorSpeed, percent);
     } else {
       //Stop motors
-      LeftElevator .setVelocity(0., percent);
-      RightElevator.setVelocity(0., percent);
+      LeftElevator .stop();
+      RightElevator.stop();
     }
 
     ///////////////////////////////////////////////////////////////////////////
