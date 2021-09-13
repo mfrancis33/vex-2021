@@ -44,10 +44,8 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
 
-  double threshold = 20.;
-  double elevatorSpeed = 50.;
-
-  // Controller1.Screen.print("Hello world!");
+  double threshold = 20;
+  double elevatorSpeed = 50;
 
   while(true){
     ///////////////////////////////////////////////////////////////////////////
@@ -63,7 +61,6 @@ void usercontrol(void) {
     // Detect if we need to move the motors that move forwards/backwards
     if(std::abs(leftAxisVertPercent) > threshold || std::abs(rightAxisVertPercent) > threshold){
       // Set velocity to the corresponding axis of the controller
-      //LeftMotor.spin(forward, leftAxisHorizPercent, percent);
       LeftMotor .spin(forward, leftAxisVertPercent, percent);
       RightMotor.spin(forward, rightAxisVertPercent, percent);
     } else {
@@ -107,7 +104,7 @@ void usercontrol(void) {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    wait(20., msec);
+    wait(20, msec);
   }
 }
 
