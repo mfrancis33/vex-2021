@@ -15,12 +15,16 @@
 // RightMotor           motor         2               
 // FrontMotor           motor         3               
 // BackMotor            motor         4               
-// LeftElevator         motor         5               
-// RightElevator        motor         6               
+// LeftArm              motor         5               
+// RightArm             motor         6               
+// LeftLever            motor         7               
+// RightLever           motor         8               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
 #include "cmath"
+
+#define AUTON 0
 
 using namespace vex;
 
@@ -28,6 +32,25 @@ using namespace vex;
 competition Competition;
 
 // define your global instances of motors and other devices here
+
+///////////////////////////////////////////////////////////////////////////
+// AUTON FUNCTIONS
+
+/**
+ * Moves the chassis motors at the same time
+ */
+void robot_drive(double amount){
+  LeftMotor .spin(forward, amount, percent);
+  RightMotor.spin(forward, amount, percent);
+}
+
+/**
+ * Stops the chassis motors
+ */
+void robot_stop(){
+  LeftMotor .stop();
+  RightMotor.stop();
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // IMPORTANT FUNCTIONS
@@ -38,14 +61,35 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  // 
+  switch(AUTON){
+    default:
+    case 0:
+      /**
+       * Drives forward for a little bit and stops.
+       */
+      robot_drive(100);
+      wait(2, seconds);
+      robot_stop();
+      break;
+    case 1:
+      /**
+       * 
+       */
+      break;
+    case 2:
+      /**
+       * 
+       */
+      break;
+  }
 }
 
 void usercontrol(void) {
   // User control code here, inside the loop
 
   double threshold = 20;
-  double elevatorSpeed = 50;
+  double armSpeed = 50;
+  double leverSpeed = 20;
 
   while(true){
     ///////////////////////////////////////////////////////////////////////////
@@ -86,21 +130,48 @@ void usercontrol(void) {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // MOBILE GOAL ELEVATOR (4-BAR)
+    // ARM MECHANISM
 
-    // Move 4-bar motors depending on button presses
-    if(Controller1.ButtonR1.pressing()){
-      //Move motors up if R1 is pressed
-      LeftElevator .spin(forward, elevatorSpeed, percent);
-      RightElevator.spin(forward, elevatorSpeed, percent);
-    } else if(Controller1.ButtonR2.pressing()){
-      //Move motors down if R2 is pressed
-      LeftElevator .spin(reverse, elevatorSpeed, percent);
-      RightElevator.spin(reverse, elevatorSpeed, percent);
+    // Move arm motors depending on button presses
+    if(Controller1.ButtonUp.pressing()){
+      //Move motors up if up button is pressed
+      LeftArm .spin(forward, armSpeed, percent);
+      RightArm.spin(forward, armSpeed, percent);
+    } else if(Controller1.ButtonDown.pressing()){
+      //Move motors down if down button is pressed
+      LeftArm .spin(reverse, armSpeed, percent);
+      RightArm.spin(reverse, armSpeed, percent);
     } else {
       //Stop motors
-      LeftElevator .stop();
-      RightElevator.stop();
+      LeftArm .stop();
+      RightArm.stop();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INDIVIDUAL LEVER MECHANISMS
+
+    // Move left lever motor depending on button presses
+    if(Controller1.ButtonL1.pressing()){
+      //Move motor up if L1 is pressed
+      LeftLever.spin(forward, leverSpeed, percent);
+    } else if(Controller1.ButtonL2.pressing()){
+      //Move motor down if L2 is pressed
+      LeftLever.spin(reverse, leverSpeed, percent);
+    } else {
+      //Stop motors
+      LeftLever.stop();
+    }
+
+    // Move right lever motor depending on button presses
+    if(Controller1.ButtonR1.pressing()){
+      //Move motor up if R1 is pressed
+      RightLever.spin(forward, leverSpeed, percent);
+    } else if(Controller1.ButtonR2.pressing()){
+      //Move motor down if R2 is pressed
+      RightLever.spin(reverse, leverSpeed, percent);
+    } else {
+      //Stop motor
+      RightLever.stop();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -108,8 +179,12 @@ void usercontrol(void) {
   }
 }
 
-// DO NOT CHANGE THIS FUNCTION!
+// DO NOT CHANGE THIS FUNCTION IF YOU DO NOT KNOW WHAT YOU ARE DOING!
 int main(){
+  // Added for debugging purposes:
+  Controller1.Screen.print("Current auton: ");
+  Controller1.Screen.print(AUTON);
+
   // Set up callbacks for autonomous and driver control periods.
   Competition.autonomous(autonomous);
   Competition.drivercontrol(usercontrol);

@@ -13,8 +13,10 @@ motor LeftMotor = motor(PORT1, ratio18_1, true);
 motor RightMotor = motor(PORT2, ratio18_1, false);
 motor FrontMotor = motor(PORT3, ratio18_1, true);
 motor BackMotor = motor(PORT4, ratio18_1, false);
-motor LeftElevator = motor(PORT5, ratio18_1, true);
-motor RightElevator = motor(PORT6, ratio18_1, false);
+motor LeftArm = motor(PORT5, ratio18_1, true);
+motor RightArm = motor(PORT6, ratio18_1, false);
+motor LeftLever = motor(PORT7, ratio18_1, false);
+motor RightLever = motor(PORT8, ratio18_1, false);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
