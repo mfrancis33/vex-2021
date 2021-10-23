@@ -36,7 +36,7 @@ const auto& sleep = vex::task::sleep; // no clue if this works
 
 const double THRESHOLD = 20;
 const double ARMSPEED = 100;
-const double LEVERSPEED = 20;
+const double LEVERSPEED = 40;
 const double LEVERROTATION = 100;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -106,6 +106,12 @@ void pre_auton(void) {
   LeftLever.setVelocity(LEVERSPEED, percent);
   RightLever.setVelocity(LEVERSPEED, percent);
 
+  // Make sure positions/rotations (idk which) are reset
+  LeftLever.resetPosition();
+  // LeftLever.resetRotation();
+  RightLever.resetPosition();
+  // RightLever.resetRotation();
+
   // Put logo on screen
   Brain.Screen.clearScreen();
   Brain.Screen.setPenColor(color(128, 0, 0));
@@ -130,6 +136,8 @@ void autonomous(void) {
     case 0:
       /**
        * Drives forward for a little bit and stops.
+       * Hopefully you were aiming at a goal because it tries to pick it up.
+       * 
        */
       robot_drive(100);
       sleep(1500);
@@ -137,6 +145,9 @@ void autonomous(void) {
       // arm_move(ARMSPEED);
       // sleep(500);
       // arm_stop();
+      // robot_drive(-60);
+      // sleep(1000);
+      // robot_stop();
       break;
     case 1:
       /**
@@ -182,6 +193,7 @@ void usercontrol(void) {
       RightMotor.stop();
     }
 
+    // Center motors
     /**
      * Detect if we want to spin the center motor
      * (only do if we are going straight-ish)
@@ -227,19 +239,23 @@ void usercontrol(void) {
     // Move left lever motor depending on button presses
     if(Controller1.ButtonL2.pressing() && !leftLeverIsUp){
       leftLeverIsUp = true;
-      LeftLever.spinFor(forward, LEVERROTATION, degrees, false);
+      // LeftLever.spinFor(forward, LEVERROTATION, degrees, false);
+      LeftLever.rotateTo(LEVERROTATION, degrees, false);
     } else if(!Controller1.ButtonL2.pressing() && leftLeverIsUp){
       leftLeverIsUp = false;
-      LeftLever.spinFor(reverse, LEVERROTATION, degrees, false);
+      // LeftLever.spinFor(reverse, LEVERROTATION, degrees, false);
+      LeftLever.rotateTo(0, degrees, false);
     }
 
     // Move right lever motor depending on button presses
     if(Controller1.ButtonR2.pressing() && !rightLeverIsUp){
       rightLeverIsUp = true;
-      RightLever.spinFor(forward, LEVERROTATION, degrees, false);
+      // RightLever.spinFor(forward, LEVERROTATION, degrees, false);
+      RightLever.rotateTo(LEVERROTATION, degrees, false);
     } else if(!Controller1.ButtonR2.pressing() && rightLeverIsUp){
       rightLeverIsUp = false;
-      RightLever.spinFor(reverse, LEVERROTATION, degrees, false);
+      // RightLever.spinFor(reverse, LEVERROTATION, degrees, false);
+      RightLever.rotateTo(0, degrees, false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -259,13 +275,28 @@ void usercontrol(void) {
         Controller1.Screen.setCursor(1, 1);
         Controller1.Screen.print("Left lever: ");
         Controller1.Screen.print(leftLeverIsUp ? "up" : "down");
-        Controller1.Screen.setCursor(1, 2);
+        Controller1.Screen.newLine();
         Controller1.Screen.print("Right lever: ");
         Controller1.Screen.print(rightLeverIsUp ? "up" : "down");
-      // } else if(Controller1.ButtonY.pressing()){
-        // 
-      // } else if(Controller1.ButtonB.pressing()){
-        // 
+      } else if(Controller1.ButtonY.pressing()){
+        // System diagnostics
+        // Robot battery
+        Controller1.Screen.clearScreen();
+        Controller1.Screen.setCursor(1, 1);
+        Controller1.Screen.print("Battery: ");
+        Controller1.Screen.print(Brain.Battery.capacity(percent));
+        // Controller1.Screen.print("%");
+        Controller1.Screen.newLine();
+        // Chassis temperature (average of left, right, and center motors)
+        Controller1.Screen.print("Chassis temp: ");
+        Controller1.Screen.print((int)(LeftMotor.temperature(fahrenheit) + RightMotor.temperature(fahrenheit) + CenterMotor.temperature(fahrenheit)) / 3);
+        // Controller1.Screen.print("°F");
+        Controller1.Screen.newLine();
+        // Arm temperature (average of left and right motor)
+        Controller1.Screen.print("Arm temp: ");
+        Controller1.Screen.print((int)(LeftArm.temperature(fahrenheit) + RightArm.temperature(fahrenheit)) / 2);
+        // Controller1.Screen.print("°F");
+        Controller1.Screen.newLine();
       } else {
         buttonIsPressed = false;
       }
@@ -273,20 +304,17 @@ void usercontrol(void) {
     } else if(
       buttonIsPressed &&
       !Controller1.ButtonA.pressing() &&
-      !Controller1.ButtonX.pressing()// &&
-      // !Controller1.ButtonY.pressing() &&
-      // !Controller1.ButtonB.pressing()
+      !Controller1.ButtonX.pressing() &&
+      !Controller1.ButtonY.pressing()
     ){
       buttonIsPressed = false;
       Controller1.Screen.clearScreen();
       Controller1.Screen.setCursor(1, 1);
       Controller1.Screen.print("A - Test auton");
-      Controller1.Screen.setCursor(1, 2);
-      Controller1.Screen.print("X - Display lever status");
-      // Controller1.Screen.setCursor(1, 3);
-      // Controller1.Screen.print("Y - ");
-      // Controller1.Screen.setCursor(1, 4);
-      // Controller1.Screen.print("B - ");
+      Controller1.Screen.newLine();
+      Controller1.Screen.print("X - Lever status");
+      Controller1.Screen.newLine();
+      Controller1.Screen.print("Y - Diagnostics");
     }
 
     ///////////////////////////////////////////////////////////////////////////
