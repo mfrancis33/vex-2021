@@ -227,19 +227,19 @@ void usercontrol(void) {
     // Move left lever motor depending on button presses
     if(Controller1.ButtonL2.pressing() && !leftLeverIsUp){
       leftLeverIsUp = true;
-      LeftLever.spinFor(forward, LEVERROTATION, degrees);
+      LeftLever.spinFor(forward, LEVERROTATION, degrees, false);
     } else if(!Controller1.ButtonL2.pressing() && leftLeverIsUp){
       leftLeverIsUp = false;
-      LeftLever.spinFor(reverse, LEVERROTATION, degrees);
+      LeftLever.spinFor(reverse, LEVERROTATION, degrees, false);
     }
 
     // Move right lever motor depending on button presses
     if(Controller1.ButtonR2.pressing() && !rightLeverIsUp){
       rightLeverIsUp = true;
-      RightLever.spinFor(forward, LEVERROTATION, degrees);
+      RightLever.spinFor(forward, LEVERROTATION, degrees, false);
     } else if(!Controller1.ButtonR2.pressing() && rightLeverIsUp){
       rightLeverIsUp = false;
-      RightLever.spinFor(reverse, LEVERROTATION, degrees);
+      RightLever.spinFor(reverse, LEVERROTATION, degrees, false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -249,17 +249,17 @@ void usercontrol(void) {
       if(Controller1.ButtonA.pressing()){
         // Test auton
         Controller1.Screen.clearScreen();
-        Controller1.Screen.setCursor(0, 0);
+        Controller1.Screen.setCursor(1, 1);
         Controller1.Screen.print("Testing auton: ");
         Controller1.Screen.print(AUTON);
         autonomous();
       } else if(Controller1.ButtonX.pressing()){
         // Displays if the levers are up or down
         Controller1.Screen.clearScreen();
-        Controller1.Screen.setCursor(0, 0);
+        Controller1.Screen.setCursor(1, 1);
         Controller1.Screen.print("Left lever: ");
         Controller1.Screen.print(leftLeverIsUp ? "up" : "down");
-        Controller1.Screen.setCursor(1, 0);
+        Controller1.Screen.setCursor(1, 2);
         Controller1.Screen.print("Right lever: ");
         Controller1.Screen.print(rightLeverIsUp ? "up" : "down");
       // } else if(Controller1.ButtonY.pressing()){
@@ -279,11 +279,13 @@ void usercontrol(void) {
     ){
       buttonIsPressed = false;
       Controller1.Screen.clearScreen();
-      Controller1.Screen.setCursor(0, 0);
-      Controller1.Screen.print("A - Test auton \n");
-      Controller1.Screen.setCursor(1, 0);
-      Controller1.Screen.print("X - Display lever status \n");
-      // Controller1.Screen.print("Y -  \n");
+      Controller1.Screen.setCursor(1, 1);
+      Controller1.Screen.print("A - Test auton");
+      Controller1.Screen.setCursor(1, 2);
+      Controller1.Screen.print("X - Display lever status");
+      // Controller1.Screen.setCursor(1, 3);
+      // Controller1.Screen.print("Y - ");
+      // Controller1.Screen.setCursor(1, 4);
       // Controller1.Screen.print("B - ");
     }
 
