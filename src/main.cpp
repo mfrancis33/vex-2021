@@ -22,14 +22,7 @@
 
 #include "vex.h"
 #include "cmath"
-
-#define AUTON 0
-const auto& sleep = vex::task::sleep; // no clue if this works
-
-const double THRESHOLD = 20;
-const double ARMSPEED = 50;
-const double LEVERSPEED = 20;
-const double LEVERROTATION = 105;
+#include "logo.cpp"
 
 using namespace vex;
 
@@ -38,6 +31,13 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 
+#define AUTON 0
+const auto& sleep = vex::task::sleep; // no clue if this works
+
+const double THRESHOLD = 20;
+const double ARMSPEED = 50;
+const double LEVERSPEED = 20;
+const double LEVERROTATION = 105;
 
 ///////////////////////////////////////////////////////////////////////////
 // AUTON FUNCTIONS
@@ -107,7 +107,13 @@ void pre_auton(void) {
   RightLever.setVelocity(LEVERSPEED, percent);
 
   // Put logo on screen
-  // 
+  Brain.Screen.clearScreen();
+  Brain.Screen.setPenColor(color(128, 0, 0));
+  for(int y = 0; y < sizeof(LOGO); y++){
+    for(int x = 0; x < sizeof(LOGO[y]); x++){
+      if(LOGO[y][x]) Brain.Screen.drawPixel(x, y);
+    }
+  }
 }
 
 void autonomous(void) {
