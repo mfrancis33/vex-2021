@@ -35,9 +35,9 @@ competition Competition;
 const auto& sleep = vex::task::sleep; // no clue if this works
 
 const double THRESHOLD = 20;
-const double ARMSPEED = 50;
+const double ARMSPEED = 100;
 const double LEVERSPEED = 20;
-const double LEVERROTATION = 105;
+const double LEVERROTATION = 100;
 
 ///////////////////////////////////////////////////////////////////////////
 // AUTON FUNCTIONS
@@ -74,9 +74,9 @@ void robot_stop(){
 /**
  * Moves the arm motors
  */
-void arm_move(){
-  LeftArm .spin(forward, ARMSPEED, percent);
-  RightArm.spin(forward, ARMSPEED, percent);
+void arm_move(double amount){
+  LeftArm .spin(forward, amount, percent);
+  RightArm.spin(forward, amount, percent);
 }
 
 /**
@@ -117,6 +117,14 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
+  // Drop holder thingy
+  arm_move(ARMSPEED);
+  sleep(250);
+  arm_move(-ARMSPEED);
+  sleep(250);
+  arm_stop();
+
+  // Run difdferent auton
   switch(AUTON){
     default:
     case 0:
@@ -124,8 +132,11 @@ void autonomous(void) {
        * Drives forward for a little bit and stops.
        */
       robot_drive(100);
-      sleep(2000);
+      sleep(1500);
       robot_stop();
+      // arm_move(ARMSPEED);
+      // sleep(500);
+      // arm_stop();
       break;
     case 1:
       /**
@@ -171,14 +182,18 @@ void usercontrol(void) {
       RightMotor.stop();
     }
 
-    // Detect if we want to spin the center motor
-    // (only do if we are going straight-ish)
+    /**
+     * Detect if we want to spin the center motor
+     * (only do if we are going straight-ish)
+     * 
+     * Steps:
+     * 1. Make sure we don't divide by 0 by making sure the motors are above the
+     *    THRESHOLD to save checking later
+     * 2. Check the sign of controller axes division to see if it is positive.
+     *    They should give a positive value with division if they are the same sign
+     */
     if(
-      // Make sure we don't divide by 0 by making sure the motors are above the
-      // THRESHOLD to save checking
       std::abs(leftAxisVertPercent) > THRESHOLD && std::abs(rightAxisVertPercent) > THRESHOLD && 
-      // Check the sign of controller axes division to see if it is positive
-      // They should give a positive value with division if they are the same sign
       sign(leftAxisVertPercent / rightAxisVertPercent) == 1
     ){
       // Set velocity to the corresponding axis of the controller
@@ -192,11 +207,11 @@ void usercontrol(void) {
     // ARM MECHANISM
 
     // Move arm motors depending on button presses
-    if(Controller1.ButtonUp.pressing()){
+    if(Controller1.ButtonR1.pressing()){
       //Move motors up if up button is pressed
       LeftArm .spin(forward, ARMSPEED, percent);
       RightArm.spin(forward, ARMSPEED, percent);
-    } else if(Controller1.ButtonDown.pressing()){
+    } else if(Controller1.ButtonL1.pressing()){
       //Move motors down if down button is pressed
       LeftArm .spin(reverse, ARMSPEED, percent);
       RightArm.spin(reverse, ARMSPEED, percent);
@@ -210,39 +225,21 @@ void usercontrol(void) {
     // INDIVIDUAL LEVER MECHANISMS
 
     // Move left lever motor depending on button presses
-    if(Controller1.ButtonL1.pressing() && !leftLeverIsUp){
+    if(Controller1.ButtonL2.pressing() && !leftLeverIsUp){
       leftLeverIsUp = true;
-      //Move motor up if L1 is pressed
-      // LeftLever.spin(forward, LEVERSPEED, percent);
-
       LeftLever.spinFor(forward, LEVERROTATION, degrees);
-    } else if(Controller1.ButtonL2.pressing() && leftLeverIsUp){
+    } else if(!Controller1.ButtonL2.pressing() && leftLeverIsUp){
       leftLeverIsUp = false;
-      //Move motor down if L2 is pressed
-      // LeftLever.spin(reverse, LEVERSPEED, percent);
-
       LeftLever.spinFor(reverse, LEVERROTATION, degrees);
-    // } else {
-    //   //Stop motors
-    //   LeftLever.stop();
     }
 
     // Move right lever motor depending on button presses
-    if(Controller1.ButtonR1.pressing() && !rightLeverIsUp){
+    if(Controller1.ButtonR2.pressing() && !rightLeverIsUp){
       rightLeverIsUp = true;
-      //Move motor up if R1 is pressed
-      // RightLever.spin(forward, LEVERSPEED, percent);
-      
       RightLever.spinFor(forward, LEVERROTATION, degrees);
-    } else if(Controller1.ButtonR2.pressing() && rightLeverIsUp){
+    } else if(!Controller1.ButtonR2.pressing() && rightLeverIsUp){
       rightLeverIsUp = false;
-      //Move motor down if R2 is pressed
-      // RightLever.spin(reverse, LEVERSPEED, percent);
-
       RightLever.spinFor(reverse, LEVERROTATION, degrees);
-    // } else {
-    //   //Stop motor
-    //   RightLever.stop();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -252,15 +249,18 @@ void usercontrol(void) {
       if(Controller1.ButtonA.pressing()){
         // Test auton
         Controller1.Screen.clearScreen();
+        Controller1.Screen.setCursor(0, 0);
         Controller1.Screen.print("Testing auton: ");
         Controller1.Screen.print(AUTON);
         autonomous();
       } else if(Controller1.ButtonX.pressing()){
         // Displays if the levers are up or down
         Controller1.Screen.clearScreen();
+        Controller1.Screen.setCursor(0, 0);
         Controller1.Screen.print("Left lever: ");
         Controller1.Screen.print(leftLeverIsUp ? "up" : "down");
-        Controller1.Screen.print("\nRight lever: ");
+        Controller1.Screen.setCursor(1, 0);
+        Controller1.Screen.print("Right lever: ");
         Controller1.Screen.print(rightLeverIsUp ? "up" : "down");
       // } else if(Controller1.ButtonY.pressing()){
         // 
@@ -279,7 +279,9 @@ void usercontrol(void) {
     ){
       buttonIsPressed = false;
       Controller1.Screen.clearScreen();
+      Controller1.Screen.setCursor(0, 0);
       Controller1.Screen.print("A - Test auton \n");
+      Controller1.Screen.setCursor(1, 0);
       Controller1.Screen.print("X - Display lever status \n");
       // Controller1.Screen.print("Y -  \n");
       // Controller1.Screen.print("B - ");
