@@ -6,12 +6,11 @@ extern brain Brain;
 extern controller Controller1;
 extern motor LeftMotor;
 extern motor RightMotor;
-extern motor FrontMotor;
-extern motor BackMotor;
 extern motor LeftArm;
 extern motor RightArm;
 extern motor LeftLever;
 extern motor RightLever;
+extern motor_group CenterMotor;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
