@@ -22,7 +22,7 @@
 
 #include "vex.h"
 #include "cmath"
-#include "logo.cpp"
+#include "nerd.h"
 
 using namespace vex;
 
@@ -109,9 +109,9 @@ void pre_auton(void) {
   // Put logo on screen
   Brain.Screen.clearScreen();
   Brain.Screen.setPenColor(color(128, 0, 0));
-  for(int y = 0; y < sizeof(LOGO); y++){
-    for(int x = 0; x < sizeof(LOGO[y]); x++){
-      if(LOGO[y][x]) Brain.Screen.drawPixel(x, y);
+  for(int y = 0; y < sizeof(NERD); y++){
+    for(int x = 0; x < sizeof(NERD[y]); x++){
+      if(NERD[y][x]) Brain.Screen.drawPixel(x, y);
     }
   }
 }
@@ -154,8 +154,8 @@ void usercontrol(void) {
     // CHASSIS MOTORS
 
     // Get percentage from controller axes
-    double leftAxisVertPercent   = (double)(Controller1.Axis3.position(percent));
-    double rightAxisVertPercent  = (double)(Controller1.Axis2.position(percent));
+    double leftAxisVertPercent  = (double)(Controller1.Axis3.position(percent));
+    double rightAxisVertPercent = (double)(Controller1.Axis2.position(percent));
 
     // double leftAxisHorizPercent  = (double)(Controller1.Axis4.position(percent));
     // double rightAxisHorizPercent = (double)(Controller1.Axis1.position(percent));
@@ -255,11 +255,16 @@ void usercontrol(void) {
         Controller1.Screen.print("Testing auton: ");
         Controller1.Screen.print(AUTON);
         autonomous();
-      // } else if(Controller1.ButtonB.pressing()){
-        // 
-      // } else if(Controller1.ButtonX.pressing()){
-        // 
+      } else if(Controller1.ButtonX.pressing()){
+        // Displays if the levers are up or down
+        Controller1.Screen.clearScreen();
+        Controller1.Screen.print("Left lever: ");
+        Controller1.Screen.print(leftLeverIsUp ? "up" : "down");
+        Controller1.Screen.print("\nRight lever: ");
+        Controller1.Screen.print(rightLeverIsUp ? "up" : "down");
       // } else if(Controller1.ButtonY.pressing()){
+        // 
+      // } else if(Controller1.ButtonB.pressing()){
         // 
       } else {
         buttonIsPressed = false;
@@ -267,17 +272,17 @@ void usercontrol(void) {
       
     } else if(
       buttonIsPressed &&
-      !Controller1.ButtonA.pressing()// &&
-      // !Controller1.ButtonX.pressing() &&
+      !Controller1.ButtonA.pressing() &&
+      !Controller1.ButtonX.pressing()// &&
       // !Controller1.ButtonY.pressing() &&
       // !Controller1.ButtonB.pressing()
     ){
       buttonIsPressed = false;
       Controller1.Screen.clearScreen();
       Controller1.Screen.print("A - Test auton \n");
-      Controller1.Screen.print("B -  \n");
-      Controller1.Screen.print("X -  \n");
-      Controller1.Screen.print("Y - ");
+      Controller1.Screen.print("X - Display lever status \n");
+      // Controller1.Screen.print("Y -  \n");
+      // Controller1.Screen.print("B - ");
     }
 
     ///////////////////////////////////////////////////////////////////////////

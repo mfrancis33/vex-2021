@@ -1,0 +1,1 @@
+extern const bool NERD[128][107];
