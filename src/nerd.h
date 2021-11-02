@@ -1,1 +1,1 @@
-extern const bool NERD[128][107];
+extern const bool NERD[272][188];
