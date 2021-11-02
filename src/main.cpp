@@ -11,18 +11,20 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// LeftMotor            motor         1               
-// RightMotor           motor         2               
+// FrontLeftMotor       motor         1               
+// FrontRightMotor      motor         2               
+// BackLeftMotor        motor         3               
+// BackRightMotor       motor         4               
 // LeftArm              motor         5               
 // RightArm             motor         6               
-// LeftLever            motor         7               
-// RightLever           motor         8               
-// CenterMotor          motor_group   3, 4            
+// Forklift             motor         7               
+// Claw                 motor         8               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
 #include "cmath"
 #include "nerd.h"
+#include "sstream"
 
 using namespace vex;
 
@@ -36,8 +38,6 @@ const auto& sleep = vex::task::sleep; // no clue if this works
 
 const double THRESHOLD = 20;
 const double ARMSPEED = 100;
-const double LEVERSPEED = 40;
-const double LEVERROTATION = 100;
 
 ///////////////////////////////////////////////////////////////////////////
 // AUTON FUNCTIONS
@@ -46,9 +46,10 @@ const double LEVERROTATION = 100;
  * Moves the chassis motors at the same time
  */
 void robot_drive(double amount){
-  LeftMotor  .spin(forward, amount, percent);
-  RightMotor .spin(forward, amount, percent);
-  CenterMotor.spin(forward, amount, percent);
+  FrontLeftMotor .spin(forward, amount, percent);
+  FrontRightMotor.spin(forward, amount, percent);
+  BackLeftMotor .spin(forward, amount, percent);
+  BackRightMotor.spin(forward, amount, percent);
 }
 
 /**
@@ -56,19 +57,20 @@ void robot_drive(double amount){
  * Positive values mean right.
  */
 void robot_turn(double amount){
-  LeftMotor  .spin(reverse, amount, percent);
-  RightMotor .spin(forward, amount, percent);
-  CenterMotor.stop();
-  // CenterMotor.spin(forward, amount, percent);
+  FrontLeftMotor .spin(reverse, amount, percent);
+  FrontRightMotor.spin(forward, amount, percent);
+  BackLeftMotor .spin(reverse, amount, percent);
+  BackRightMotor.spin(forward, amount, percent);
 }
 
 /**
  * Stops the chassis motors
  */
 void robot_stop(){
-  LeftMotor  .stop();
-  RightMotor .stop();
-  CenterMotor.stop();
+  FrontLeftMotor .stop();
+  FrontRightMotor.stop();
+  BackLeftMotor .stop();
+  BackRightMotor.stop();
 }
 
 /**
@@ -94,6 +96,12 @@ void arm_stop(){
 template <typename T> int sign(T val) {
   return (T(0) < val) - (val < T(0));
 }
+// https://stackoverflow.com/a/13636164
+template <typename T> std::string to_string ( T Number ){
+  std::ostringstream ss;
+  ss << Number;
+  return ss.str();
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // IMPORTANT FUNCTIONS
@@ -101,16 +109,6 @@ template <typename T> int sign(T val) {
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-
-  // Initialize velocities of motors
-  LeftLever.setVelocity(LEVERSPEED, percent);
-  RightLever.setVelocity(LEVERSPEED, percent);
-
-  // Make sure positions/rotations (idk which) are reset
-  LeftLever.resetPosition();
-  // LeftLever.resetRotation();
-  RightLever.resetPosition();
-  // RightLever.resetRotation();
 
   // Put logo on screen
   Brain.Screen.clearScreen();
@@ -123,13 +121,6 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
-  // Drop holder thingy
-  arm_move(ARMSPEED);
-  sleep(250);
-  arm_move(-ARMSPEED);
-  sleep(250);
-  arm_stop();
-
   // Run difdferent auton
   switch(AUTON){
     default:
@@ -142,12 +133,12 @@ void autonomous(void) {
       robot_drive(100);
       sleep(1500);
       robot_stop();
-      // arm_move(ARMSPEED);
-      // sleep(500);
-      // arm_stop();
-      // robot_drive(-60);
-      // sleep(1000);
-      // robot_stop();
+      arm_move(ARMSPEED);
+      sleep(500);
+      arm_stop();
+      robot_drive(-60);
+      sleep(1000);
+      robot_stop();
       break;
     case 1:
       /**
@@ -182,37 +173,19 @@ void usercontrol(void) {
     // double leftAxisHorizPercent  = (double)(Controller1.Axis4.position(percent));
     // double rightAxisHorizPercent = (double)(Controller1.Axis1.position(percent));
 
-    // Left and right motors
+    // Chassis motors
     if(std::abs(leftAxisVertPercent) > THRESHOLD || std::abs(rightAxisVertPercent) > THRESHOLD){
       // Move left and right motors to the corresponding controller axis
-      LeftMotor .spin(forward, leftAxisVertPercent, percent);
-      RightMotor.spin(forward, rightAxisVertPercent, percent);
+      FrontLeftMotor .spin(forward, leftAxisVertPercent, percent);
+      FrontRightMotor.spin(forward, rightAxisVertPercent, percent);
+      BackLeftMotor .spin(forward, leftAxisVertPercent, percent);
+      BackRightMotor.spin(forward, rightAxisVertPercent, percent);
     } else {
       // If no input is detected, stop motors
-      LeftMotor .stop();
-      RightMotor.stop();
-    }
-
-    // Center motors
-    /**
-     * Detect if we want to spin the center motor
-     * (only do if we are going straight-ish)
-     * 
-     * Steps:
-     * 1. Make sure we don't divide by 0 by making sure the motors are above the
-     *    THRESHOLD to save checking later
-     * 2. Check the sign of controller axes division to see if it is positive.
-     *    They should give a positive value with division if they are the same sign
-     */
-    if(
-      std::abs(leftAxisVertPercent) > THRESHOLD && std::abs(rightAxisVertPercent) > THRESHOLD && 
-      sign(leftAxisVertPercent / rightAxisVertPercent) == 1
-    ){
-      // Set velocity to the corresponding axis of the controller
-      CenterMotor.spin(forward, (leftAxisVertPercent + rightAxisVertPercent) / 2, percent);
-    } else {
-      // If no input is detected, stop motors
-      CenterMotor.stop();
+      FrontLeftMotor .stop();
+      FrontRightMotor.stop();
+      BackLeftMotor .stop();
+      BackRightMotor.stop();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -231,31 +204,6 @@ void usercontrol(void) {
       //Stop motors
       LeftArm .stop();
       RightArm.stop();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // INDIVIDUAL LEVER MECHANISMS
-
-    // Move left lever motor depending on button presses
-    if(Controller1.ButtonL2.pressing() && !leftLeverIsUp){
-      leftLeverIsUp = true;
-      // LeftLever.spinFor(forward, LEVERROTATION, degrees, false);
-      LeftLever.rotateTo(LEVERROTATION, degrees, false);
-    } else if(!Controller1.ButtonL2.pressing() && leftLeverIsUp){
-      leftLeverIsUp = false;
-      // LeftLever.spinFor(reverse, LEVERROTATION, degrees, false);
-      LeftLever.rotateTo(0, degrees, false);
-    }
-
-    // Move right lever motor depending on button presses
-    if(Controller1.ButtonR2.pressing() && !rightLeverIsUp){
-      rightLeverIsUp = true;
-      // RightLever.spinFor(forward, LEVERROTATION, degrees, false);
-      RightLever.rotateTo(LEVERROTATION, degrees, false);
-    } else if(!Controller1.ButtonR2.pressing() && rightLeverIsUp){
-      rightLeverIsUp = false;
-      // RightLever.spinFor(reverse, LEVERROTATION, degrees, false);
-      RightLever.rotateTo(0, degrees, false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -283,19 +231,7 @@ void usercontrol(void) {
         // Robot battery
         Controller1.Screen.clearScreen();
         Controller1.Screen.setCursor(1, 1);
-        Controller1.Screen.print("Battery: ");
-        Controller1.Screen.print(Brain.Battery.capacity(percent));
-        // Controller1.Screen.print("%");
-        Controller1.Screen.newLine();
-        // Chassis temperature (average of left, right, and center motors)
-        Controller1.Screen.print("Chassis temp: ");
-        Controller1.Screen.print((int)(LeftMotor.temperature(fahrenheit) + RightMotor.temperature(fahrenheit) + CenterMotor.temperature(fahrenheit)) / 3);
-        // Controller1.Screen.print("°F");
-        Controller1.Screen.newLine();
-        // Arm temperature (average of left and right motor)
-        Controller1.Screen.print("Arm temp: ");
-        Controller1.Screen.print((int)(LeftArm.temperature(fahrenheit) + RightArm.temperature(fahrenheit)) / 2);
-        // Controller1.Screen.print("°F");
+        Controller1.Screen.print("Battery: " + to_string(Brain.Battery.capacity(percent)) + "%");
         Controller1.Screen.newLine();
       } else {
         buttonIsPressed = false;
