@@ -2,7 +2,7 @@
 
 /**
  * An array of booleans representing on pixels that shows the EngiNERDs logo.
- * Displays at a 188x272 resolution (the robot brain is 480x292).
+ * Displays at a 188x272 resolution (the robot brain is 480x272).
  * Go Team 2337!
  */
 const bool NERD[272][188] = {

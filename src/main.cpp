@@ -11,14 +11,14 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// FrontLeftMotor       motor         1               
-// FrontRightMotor      motor         2               
-// BackLeftMotor        motor         3               
-// BackRightMotor       motor         4               
-// LeftArm              motor         5               
-// RightArm             motor         6               
-// Forklift             motor         7               
-// Claw                 motor         8               
+// FrontLeftMotor       motor         11              
+// FrontRightMotor      motor         12              
+// BackLeftMotor        motor         13              
+// BackRightMotor       motor         14              
+// LeftArm              motor         15              
+// RightArm             motor         16              
+// Forklift             motor         17              
+// Claw                 motor         18              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -34,7 +34,7 @@ competition Competition;
 // define your global instances of motors and other devices here
 
 #define AUTON 0
-const auto& sleep = vex::task::sleep; // no clue if this works
+const auto& sleep = vex::task::sleep;
 
 const double THRESHOLD = 20;
 const double ARMSPEED = 100;
