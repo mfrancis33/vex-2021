@@ -24,7 +24,6 @@
 #include "vex.h"
 #include "cmath"
 #include "nerd.h"
-#include "sstream"
 
 using namespace vex;
 
@@ -38,6 +37,7 @@ const auto& sleep = vex::task::sleep;
 
 const double THRESHOLD = 20;
 const double ARMSPEED = 100;
+const double CLAWSPEED = 75;
 
 ///////////////////////////////////////////////////////////////////////////
 // AUTON FUNCTIONS
@@ -96,12 +96,6 @@ void arm_stop(){
 template <typename T> int sign(T val) {
   return (T(0) < val) - (val < T(0));
 }
-// https://stackoverflow.com/a/13636164
-template <typename T> std::string to_string ( T Number ){
-  std::ostringstream ss;
-  ss << Number;
-  return ss.str();
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // IMPORTANT FUNCTIONS
@@ -156,11 +150,9 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
 
+  // bool clawIsOpen = false;
   bool buttonIsPressed = true;
   Controller1.Screen.clearScreen();
-
-  bool leftLeverIsUp = false;
-  bool rightLeverIsUp = false;
 
   while(true){
     ///////////////////////////////////////////////////////////////////////////
@@ -196,7 +188,7 @@ void usercontrol(void) {
       //Move motors up if up button is pressed
       LeftArm .spin(forward, ARMSPEED, percent);
       RightArm.spin(forward, ARMSPEED, percent);
-    } else if(Controller1.ButtonL1.pressing()){
+    } else if(Controller1.ButtonR2.pressing()){
       //Move motors down if down button is pressed
       LeftArm .spin(reverse, ARMSPEED, percent);
       RightArm.spin(reverse, ARMSPEED, percent);
@@ -204,6 +196,16 @@ void usercontrol(void) {
       //Stop motors
       LeftArm .stop();
       RightArm.stop();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // "END EFFECTOR" MECHANISMS
+    // These are simple so I'm combining them
+
+    if(Controller1.ButtonL2.pressing()){
+      Claw.spin(forward, CLAWSPEED, percent);
+    } else if(Controller1.ButtonL1.pressing()){
+      Claw.spin(reverse, CLAWSPEED, percent);    
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -217,22 +219,22 @@ void usercontrol(void) {
         Controller1.Screen.print("Testing auton: ");
         Controller1.Screen.print(AUTON);
         autonomous();
-      } else if(Controller1.ButtonX.pressing()){
-        // Displays if the levers are up or down
-        Controller1.Screen.clearScreen();
-        Controller1.Screen.setCursor(1, 1);
-        Controller1.Screen.print("Left lever: ");
-        Controller1.Screen.print(leftLeverIsUp ? "up" : "down");
-        Controller1.Screen.newLine();
-        Controller1.Screen.print("Right lever: ");
-        Controller1.Screen.print(rightLeverIsUp ? "up" : "down");
+      // } else if(Controller1.ButtonX.pressing()){
+        // 
       } else if(Controller1.ButtonY.pressing()){
         // System diagnostics
         // Robot battery
         Controller1.Screen.clearScreen();
         Controller1.Screen.setCursor(1, 1);
-        Controller1.Screen.print("Battery: " + to_string(Brain.Battery.capacity(percent)) + "%");
-        Controller1.Screen.newLine();
+        if(Brain.Battery.capacity(percent) < 25)
+          Controller1.Screen.print("Battery: < 25%");
+        else if(Brain.Battery.capacity(percent) < 50)
+          Controller1.Screen.print("Battery: < 50%");
+        else if(Brain.Battery.capacity(percent) < 75)
+          Controller1.Screen.print("Battery: < 75%");
+        else
+          Controller1.Screen.print("Battery: good");
+        // Controller1.Screen.newLine();
       } else {
         buttonIsPressed = false;
       }
@@ -247,8 +249,8 @@ void usercontrol(void) {
       Controller1.Screen.clearScreen();
       Controller1.Screen.setCursor(1, 1);
       Controller1.Screen.print("A - Test auton");
-      Controller1.Screen.newLine();
-      Controller1.Screen.print("X - Lever status");
+      // Controller1.Screen.newLine();
+      // Controller1.Screen.print("X - Lever status");
       Controller1.Screen.newLine();
       Controller1.Screen.print("Y - Diagnostics");
     }
