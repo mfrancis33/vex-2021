@@ -32,12 +32,21 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 
-#define AUTON 0
+///////////////////////////////////////////////////////////////////////////
+#define AUTON 1 // set auton here
+///////////////////////////////////////////////////////////////////////////
+
+// sleep alias
 const auto& sleep = vex::task::sleep;
 
+// important constants
 const double THRESHOLD = 20;
 const double ARMSPEED = 100;
 const double CLAWSPEED = 75;
+const double FORKLIFTSPEED = 100;
+const double FORKLIFTRATIO = 11;
+const double FORKLIFTDOWN = 90 * FORKLIFTRATIO;
+const double FORKLIFTUP = 45 * FORKLIFTRATIO;
 
 ///////////////////////////////////////////////////////////////////////////
 // AUTON FUNCTIONS
@@ -106,27 +115,42 @@ void pre_auton(void) {
 
   // Put logo on screen
   Brain.Screen.clearScreen();
-  Brain.Screen.setPenColor(color(128, 0, 0));
+  Brain.Screen.setPenColor(color(255, 32, 32));
   for(int y = 0; y < sizeof(NERD); y++){
     for(int x = 0; x < sizeof(NERD[y]); x++){
       if(NERD[y][x]) Brain.Screen.drawPixel(x, y);
     }
   }
+
+  // Set motor speed
+  Forklift.setVelocity(FORKLIFTSPEED, percent);
+  Forklift.resetPosition();
+  Forklift.resetRotation();
+  Claw.setVelocity(CLAWSPEED, percent);
 }
 
 void autonomous(void) {
-  // Run difdferent auton
+  // Open claw and move it down
+  Claw.spin(forward, CLAWSPEED, percent);
+  Forklift.rotateTo(FORKLIFTDOWN, degrees, false);
+  sleep(250);
+  Claw.stop();
+  sleep(750);
+
+  // Run different auton
   switch(AUTON){
     default:
     case 0:
       /**
        * Drives forward for a little bit and stops.
        * Hopefully you were aiming at a goal because it tries to pick it up.
-       * 
        */
       robot_drive(100);
       sleep(1500);
       robot_stop();
+      Claw.spin(reverse);
+      sleep(500);
+      Claw.stop();
       arm_move(ARMSPEED);
       sleep(500);
       arm_stop();
@@ -136,8 +160,16 @@ void autonomous(void) {
       break;
     case 1:
       /**
-       * 
+       * Drives backwards to get the mobile goal, picks it up, and drives back
        */
+      robot_drive(-100);
+      sleep(1500);
+      robot_stop();
+      Forklift.rotateTo(FORKLIFTUP, degrees, false);
+      sleep(500);
+      robot_drive(100);
+      sleep(1250);
+      robot_stop();
       break;
     case 2:
       /**
@@ -150,7 +182,7 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
 
-  // bool clawIsOpen = false;
+  bool forkliftDown = Forklift.rotation(degrees) > 67.5 * FORKLIFTRATIO;//false
   bool buttonIsPressed = true;
   Controller1.Screen.clearScreen();
 
@@ -203,9 +235,17 @@ void usercontrol(void) {
     // These are simple so I'm combining them
 
     if(Controller1.ButtonL2.pressing()){
-      Claw.spin(forward, CLAWSPEED, percent);
+      Claw.spin(forward);
     } else if(Controller1.ButtonL1.pressing()){
-      Claw.spin(reverse, CLAWSPEED, percent);    
+      Claw.spin(reverse);
+    }
+
+    if(Controller1.ButtonUp.pressing() && forkliftDown){
+      Forklift.rotateTo(FORKLIFTUP, degrees, false);
+      forkliftDown = false;
+    } else if(Controller1.ButtonDown.pressing() && !forkliftDown){
+      Forklift.rotateTo(FORKLIFTDOWN, degrees, false);
+      forkliftDown = true;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -218,6 +258,7 @@ void usercontrol(void) {
         Controller1.Screen.setCursor(1, 1);
         Controller1.Screen.print("Testing auton: ");
         Controller1.Screen.print(AUTON);
+        pre_auton();
         autonomous();
       // } else if(Controller1.ButtonX.pressing()){
         // 
